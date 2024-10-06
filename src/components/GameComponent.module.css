@@ -1,0 +1,151 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.header {
+  background-color: #2c3e50;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.headerTitle {
+  font-size: 2.5em;
+  margin: 0;
+  font-weight: bold;
+}
+
+.content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 60px; /* Add some padding at the bottom */
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.button {
+  font-size: 1em;
+  padding: 10px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 200px;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 5px;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.generatedWord {
+  margin-top: 15px;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.funnyAnimal {
+  margin-top: 30px;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.image {
+  max-width: 100%;
+  height: auto;
+  margin-top: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  margin-bottom: 60px; /* Add space below the image */
+}
+
+.resetButtonContainer {
+  margin-top: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.resetButton {
+  background-color: #ff69b4; /* Pink color */
+}
+
+.resetButton:hover {
+  background-color: #ff1493; /* Darker pink on hover */
+}
+
+@media screen and (min-width: 768px) {
+  .container {
+    padding: 40px;
+  }
+
+  .header {
+    padding: 30px 0;
+  }
+
+  .headerTitle {
+    font-size: 3em;
+  }
+
+  .button {
+    font-size: 1.2em;
+    padding: 15px 30px;
+  }
+
+  .image {
+    margin-bottom: 80px; /* More space below the image on larger screens */
+  }
+
+  .resetButtonContainer {
+    margin-left: 40px; /* More left margin on larger screens */
+    margin-bottom: 60px; /* More bottom margin on larger screens */
+    right: 40px;
+    top: 40px;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+.adjectiveButton {
+  background-color: #ffb3ba; /* Light pink */
+}
+
+.vegetableButton {
+  background-color: #baffc9; /* Light green */
+}
+
+.animalButton {
+  background-color: #bae1ff; /* Light blue */
+}
