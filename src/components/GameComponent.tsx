@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { generateWord, generateAnimal, getImageUrl } from "../utils/openaiController";
+import { generateWord, generateAnimalExpression, getImageUrl } from "../utils/openaiController";
+import { errorMessageAnimalExpression, imgMessage } from "../utils/messages";
 import styles from "./GameComponent.module.css";
 
 export default function GameComponent() {
@@ -10,6 +11,8 @@ export default function GameComponent() {
   const [animal, setAnimal] = useState("");
   const [funnyAnimal, setFunnyAnimal] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [imgErrorMessage, setImgErrorMessage] = useState("");
 
   const resetGame = () => {
     setAdjective("");
@@ -24,24 +27,58 @@ export default function GameComponent() {
     switch (type) {
       case "adjective":
         if (word) setAdjective(word);
+
         break;
       case "vegetable":
         if (word) setVegetable(word);
+
         break;
       case "animal":
-        if (word) setAnimal(word);
+        if (word) {
+          setAnimal(word);
+
+          if (adjective && vegetable) {
+            handleGenerateFunnyAnimal(adjective, vegetable, word);
+          }
+        }
+
         break;
     }
   };
 
-  const handleGenerateFunnyAnimal = async () => {
-    const funnyAnimal = await generateAnimal(adjective, vegetable, animal);
-    if (funnyAnimal) setFunnyAnimal(funnyAnimal);
+  const handleGenerateFunnyAnimal = async (adjective: string, vegetable: string, animal: string) => {
+    if (adjective && vegetable && animal) {
+      try {
+        const funnyAnimal = await generateAnimalExpression(adjective, vegetable, animal);
+        if (funnyAnimal) setFunnyAnimal(funnyAnimal);
+      } catch (err) {
+        console.error("Error generating funny animal:", err);
+
+        setFunnyAnimal(errorMessageAnimalExpression);
+      }
+    } else {
+      console.error("Cannot generate funny animal: missing adjective, vegetable, or animal");
+      setFunnyAnimal(errorMessageAnimalExpression);
+    }
   };
 
   const handleGenerateImage = async () => {
-    const url = await getImageUrl(funnyAnimal, adjective, vegetable, animal);
-    if (url) setImageUrl(url);
+    console.log("handleGenerateImage called");
+    setIsLoading(true);
+
+    try {
+      // const url = "";
+      // setImageUrl(url);
+      const url = await getImageUrl(funnyAnimal, adjective, vegetable, animal);
+      if (url) setImageUrl(url);
+    } catch (err) {
+      console.error("Error generating image:", err);
+      // Handle error by showing a message and using a placeholder image
+      setImgErrorMessage(imgMessage);
+      setImageUrl("../../public/assets/placeholder.png");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,28 +113,29 @@ export default function GameComponent() {
           </div>
         )}
 
-        {animal && !funnyAnimal && (
-          <div className={styles.buttonContainer}>
-            <button className={styles.button} onClick={handleGenerateFunnyAnimal}>
-              Generate Funny Animal
-            </button>
-          </div>
-        )}
-
-        {funnyAnimal && (
+        {animal && (
           <div>
-            <p className={styles.funnyAnimal}>{funnyAnimal}</p>
-            {!imageUrl && (
+            {!imageUrl && !isLoading && (
               <div className={styles.buttonContainer}>
                 <button className={styles.button} onClick={handleGenerateImage}>
-                  Generate Image
+                  Male: {funnyAnimal}
                 </button>
               </div>
             )}
           </div>
         )}
+        {isLoading && (
+          <div className={styles.spinnerContainer}>
+            <div className={styles.spinner}></div>
+          </div>
+        )}
+        {imgErrorMessage && <div className={styles.imgErrorMessage}>{imgErrorMessage}</div>}
 
-        {imageUrl && <img className={styles.image} src={imageUrl} alt="Generated Funny Animal" />}
+        {imageUrl && (
+          <div>
+            <img className={styles.image} src={imageUrl} alt="Ein Tier" />
+          </div>
+        )}
 
         <div className={styles.resetButtonContainer}>
           <button className={`${styles.button} ${styles.resetButton}`} onClick={resetGame}>

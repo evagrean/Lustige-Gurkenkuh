@@ -1,52 +1,114 @@
 import openai from "./openaiConfig";
+import { wordPrompt, funnyAnimalPrompt, imagePrompt } from "./prompts";
 
-const generateWord = async (term: string) => {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "user",
-        content: `Generiere mir ein deutsches Wort basierend auf dem vorgegebenen Begriff ${term} und gebe mir nur das Wort zurück.
-        Es gibt die Möglichkeit Adjectiv bzw. "adjective", Gemüse, bzw. "vegetable" oder Tier, bzw. "animal". Wenn der vorgegebene Begriff "adjective" ist,
-        dann generiere ein Adjektiv. Das Adjektiv soll relativ gänging sein und nur aus einem Teil bestehen. Keine zusammengesetzten Wörter aus zwei oder mehr Adjektiven. Wenn der Begriff "vetetable" ist, dann gib
-        den Namen eines Gemüses oder Obstes zurück. Das Wort darf nicht "Karotte" sein. Wenn der Begriff "animal" ist, dann gib den Namen eines Tieres zurück.
-        Generiere jedes Mal ein neues Wort`,
-      },
-    ],
-  });
-  const word = response.choices[0].message.content;
+const generateWord = async (term: string): Promise<string> => {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: wordPrompt(term),
+        },
+      ],
+    });
 
-  return word;
+    const word = response.choices[0].message.content;
+    if (!word) {
+      throw new Error("No word generated");
+    }
+    return word;
+  } catch (err) {
+    console.error("Error generating word:", err);
+    throw err;
+  }
 };
 
-const generateAnimal = async (adjective: string, vegetable: string, animal: string) => {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "user",
-        content: `Bilde aus dem Gemüse ${vegetable} und dem Tier ${animal} ein zusammengesetztes Wort, ein Kompositum. 
-    Dabei ist ${vegetable} das Erstglied bzw. Bestimmungswort und ${animal} das Zweitglied bzw. Grundwort.
-    Setze dann das Adjektiv ${adjective} davor. Passe ${adjective} so an, dass es grammatikalisch zum Geschlecht 
-    des Grundwortes ${animal} passt. Setze noch den passenden unbestimmten Artikel davor.
-    Gebe mir nun die fertige Kombination aus Artikel, Adjektiv und Kompositum zurück.`,
-      },
-    ],
-  });
-  const newAnimal = response.choices[0].message.content;
-  return newAnimal;
+const generateAnimalExpression = async (adjective: string, vegetable: string, animal: string): Promise<string | null> => {
+  // we return null if the API call fails or if no text is generated
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: funnyAnimalPrompt(adjective, vegetable, animal),
+        },
+      ],
+    });
+    console.dir(response, { depth: null });
+    const newAnimal: string | null = response.choices[0].message.content;
+
+    if (!newAnimal) {
+      throw new Error("No animal generated");
+    }
+
+    return newAnimal;
+  } catch (err) {
+    console.error("Error generating animal:", err);
+    throw err;
+  }
 };
 
-const getImageUrl = async (funnyAnimal: string, adjective: string, vegetable: string, animal: string) => {
-  const response = await openai.images.generate({
-    prompt: `Generiere ein Bild von: ${funnyAnimal}. Das ist ein/eine ${animal}, das aus einer/einem ${vegetable} besteht
-    und ${adjective} aussieht. Das Fell oder die Haut soll die gleiche Farbe haben wie ein/eine ${vegetable}. Es soll aber 
-    schon das ${animal} erkennbar sein. Auf dem Bild soll kein Text und keine Schrift zu sehen sein.`,
-    n: 1,
-    size: "512x512",
-  });
-  const imageUrl = response.data[0].url;
-  console.log(imageUrl);
-  return imageUrl;
+const translate = async (expression: string): Promise<string> => {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: `Translate ${expression} into English. Return only one word or possible translation.`,
+        },
+      ],
+    });
+    const translation = response.choices[0].message.content;
+    console.log(translation);
+    if (!translation) {
+      throw new Error("No translation for expression");
+    }
+    return translation;
+  } catch (err) {
+    console.error("Error translating funny animal", err);
+    throw err;
+  }
 };
-export { generateWord, generateAnimal, getImageUrl };
+
+const getImageUrl = async (funnyAnimal: string, adjective: string, vegetable: string, animal: string): Promise<string> => {
+  try {
+    // let funnyAnimalTranslation: string;
+    let adjectiveTranslation: string;
+    let vegetableTranslation: string;
+    let animalTranslation: string;
+    try {
+      //  funnyAnimalTranslation = await translate(funnyAnimal);
+      adjectiveTranslation = await translate(adjective);
+      vegetableTranslation = await translate(vegetable);
+      animalTranslation = await translate(animal);
+    } catch (err) {
+      console.error("Error getting translated words:", err);
+      throw err; // throw error to be handled by the caller
+    }
+    if (!adjectiveTranslation || !vegetableTranslation || !animalTranslation) {
+      throw new Error("No translation for expression");
+    }
+    const response = await openai.images.generate({
+      prompt: imagePrompt(adjectiveTranslation, vegetableTranslation, animalTranslation),
+      n: 1,
+      size: "512x512",
+      quality: "hd",
+    });
+    console.log(response.data[0].revised_prompt);
+
+    const imageUrl = response.data[0].url;
+
+    if (!imageUrl) {
+      throw new Error("No image URL generated");
+    }
+    return imageUrl;
+  } catch (err) {
+    console.error("Error generating image:", err);
+    throw err;
+  }
+};
+
+export { generateWord, generateAnimalExpression, getImageUrl };
