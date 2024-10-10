@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { generateWord, generateAnimalExpression, getImageUrl } from "../utils/openaiController";
-import { errorMessageAnimalExpression, imgMessage } from "../utils/messages";
+import { errorMessageAnimalExpression, imgMessage, missingAdjectiveMessage, missingVegetableMessage, missingWordsMessage } from "../utils/messages";
 import { Londrina_Sketch } from "next/font/google";
 import styles from "./GameComponent.module.css";
 
@@ -14,6 +14,7 @@ export default function GameComponent() {
   const [vegetable, setVegetable] = useState("");
   const [animal, setAnimal] = useState("");
   const [funnyAnimal, setFunnyAnimal] = useState("");
+  const [missingMessage, setMissingMessage] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imgErrorMessage, setImgErrorMessage] = useState("");
@@ -23,6 +24,7 @@ export default function GameComponent() {
     setVegetable("");
     setAnimal("");
     setFunnyAnimal("");
+    setMissingMessage("");
     setImageUrl("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -32,19 +34,24 @@ export default function GameComponent() {
     switch (type) {
       case "adjective":
         if (word) setAdjective(word);
-
+        if (animal && vegetable) handleGenerateFunnyAnimal(adjective, vegetable, word);
         break;
       case "vegetable":
         if (word) setVegetable(word);
-
+        if (animal && adjective) handleGenerateFunnyAnimal(adjective, vegetable, animal);
         break;
       case "animal":
         if (word) {
           setAnimal(word);
-
-          if (adjective && vegetable) {
-            handleGenerateFunnyAnimal(adjective, vegetable, word);
-          }
+        }
+        if (adjective && vegetable) {
+          handleGenerateFunnyAnimal(adjective, vegetable, word);
+        } else if (!adjective) {
+          setMissingMessage(missingAdjectiveMessage);
+        } else if (!vegetable) {
+          setMissingMessage(missingVegetableMessage);
+        } else if (!adjective && !vegetable) {
+          setMissingMessage(missingWordsMessage);
         }
 
         break;
@@ -59,11 +66,11 @@ export default function GameComponent() {
       } catch (err) {
         console.error("Error generating funny animal:", err);
 
-        setFunnyAnimal(errorMessageAnimalExpression);
+        setMissingMessage(errorMessageAnimalExpression);
       }
     } else {
       console.error("Cannot generate funny animal: missing adjective, vegetable, or animal");
-      setFunnyAnimal(errorMessageAnimalExpression);
+      setMissingMessage(errorMessageAnimalExpression);
     }
   };
 
@@ -126,7 +133,7 @@ export default function GameComponent() {
           </div>
         </div>
 
-        {animal && (
+        {!missingMessage && funnyAnimal ? (
           <div>
             {!imageUrl && !isLoading && (
               <button className={`${styles.button} ${styles.drawButton}`} onClick={handleGenerateImage}>
@@ -134,6 +141,8 @@ export default function GameComponent() {
               </button>
             )}
           </div>
+        ) : (
+          <div className={styles.missingMessage}>{missingMessage}</div>
         )}
         {isLoading && (
           <div className={styles.spinnerContainer}>
