@@ -3,7 +3,11 @@
 import React, { useState } from "react";
 import { generateWord, generateAnimalExpression, getImageUrl } from "../utils/openaiController";
 import { errorMessageAnimalExpression, imgMessage } from "../utils/messages";
+import { Londrina_Sketch } from "next/font/google";
 import styles from "./GameComponent.module.css";
+
+// Header
+const londrinaSketch = Londrina_Sketch({ subsets: ["latin"], weight: ["400"] });
 
 export default function GameComponent() {
   const [adjective, setAdjective] = useState("");
@@ -20,6 +24,7 @@ export default function GameComponent() {
     setAnimal("");
     setFunnyAnimal("");
     setImageUrl("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleGenerateWord = async (type: string) => {
@@ -82,45 +87,51 @@ export default function GameComponent() {
   };
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <h1 className={styles.headerTitle}>Lustige Gurkenkuh</h1>
+    <div>
+      <header className={`${styles.header} ${londrinaSketch.className}`}>
+        <h1 className={styles.headerTitle}>Die Lustige Gurkenkuh</h1>
       </header>
 
       <div className={styles.content}>
         <div className={styles.buttonContainer}>
-          <button className={`${styles.button} ${styles.jarButton} ${styles.adjectiveButton}`} onClick={() => handleGenerateWord("adjective")} disabled={adjective !== ""}>
-            Generate Adjective
-          </button>
-          {adjective && <span className={styles.generatedWord}>Generated adjective: {adjective}</span>}
+          <div className={styles.buttonRow}>
+            <div className={styles.wordContainer}>
+              {!adjective ? (
+                <button className={`${styles.button} ${styles.jarButton} ${styles.adjectiveButton}`} onClick={() => handleGenerateWord("adjective")}>
+                  Ziehe ein Adjektiv
+                </button>
+              ) : (
+                <span className={styles.generatedWord}>{adjective}</span>
+              )}
+            </div>
+            <div className={styles.wordContainer}>
+              {!vegetable ? (
+                <button className={`${styles.button} ${styles.jarButton} ${styles.vegetableButton}`} onClick={() => handleGenerateWord("vegetable")}>
+                  Ziehe eine Frucht
+                </button>
+              ) : (
+                <span className={styles.generatedWord}>{vegetable}</span>
+              )}
+            </div>
+
+            <div className={styles.wordContainer}>
+              {!animal ? (
+                <button className={`${styles.button} ${styles.jarButton} ${styles.animalButton}`} onClick={() => handleGenerateWord("animal")}>
+                  Ziehe ein Tier
+                </button>
+              ) : (
+                <span className={styles.generatedWord}>{animal}</span>
+              )}
+            </div>
+          </div>
         </div>
-
-        {adjective && (
-          <div className={styles.buttonContainer}>
-            <button className={`${styles.button} ${styles.jarButton} ${styles.vegetableButton}`} onClick={() => handleGenerateWord("vegetable")} disabled={vegetable !== ""}>
-              Generate Vegetable
-            </button>
-            {vegetable && <span className={styles.generatedWord}>Generated vegetable: {vegetable}</span>}
-          </div>
-        )}
-
-        {vegetable && (
-          <div className={styles.buttonContainer}>
-            <button className={`${styles.button} ${styles.jarButton} ${styles.animalButton}`} onClick={() => handleGenerateWord("animal")} disabled={animal !== ""}>
-              Generate Animal
-            </button>
-            {animal && <span className={styles.generatedWord}>Generated animal: {animal}</span>}
-          </div>
-        )}
 
         {animal && (
           <div>
             {!imageUrl && !isLoading && (
-              <div className={styles.buttonContainer}>
-                <button className={styles.button} onClick={handleGenerateImage}>
-                  Male: {funnyAnimal}
-                </button>
-              </div>
+              <button className={`${styles.button} ${styles.drawButton}`} onClick={handleGenerateImage}>
+                Male: {funnyAnimal}
+              </button>
             )}
           </div>
         )}
@@ -132,16 +143,17 @@ export default function GameComponent() {
         {imgErrorMessage && <div className={styles.imgErrorMessage}>{imgErrorMessage}</div>}
 
         {imageUrl && (
-          <div>
-            <img className={styles.image} src={imageUrl} alt="Ein Tier" />
+          <div className={styles.imageContainer}>
+            <img className={styles.image} src={imageUrl} alt={funnyAnimal} />
           </div>
         )}
-
-        <div className={styles.resetButtonContainer}>
-          <button className={`${styles.button} ${styles.resetButton}`} onClick={resetGame}>
-            Nochmal Spielen
-          </button>
-        </div>
+        {imageUrl && (
+          <div className={styles.resetButtonContainer}>
+            <button className={`${styles.button} ${styles.resetButton}`} onClick={resetGame}>
+              Nochmal Spielen
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
