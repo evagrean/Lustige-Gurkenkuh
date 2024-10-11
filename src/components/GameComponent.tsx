@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { generateWord, generateAnimalExpression, getImageUrl } from "../utils/openaiController";
-import { errorMessageAnimalExpression, imgMessage, missingAdjectiveMessage, missingVegetableMessage, missingWordsMessage } from "../utils/messages";
+import { errorMessageAnimalExpression, imgMessage, missingWordsMessage } from "../utils/messages";
 import { Londrina_Sketch } from "next/font/google";
 import styles from "./GameComponent.module.css";
 
@@ -19,41 +19,41 @@ export default function GameComponent() {
   const [isLoading, setIsLoading] = useState(false);
   const [imgErrorMessage, setImgErrorMessage] = useState("");
 
-  const resetGame = () => {
-    setAdjective("");
-    setVegetable("");
-    setAnimal("");
-    setFunnyAnimal("");
-    setMissingMessage("");
-    setImageUrl("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const checkWordsCompletion = useCallback(() => {
+    if (adjective && vegetable && animal) {
+      handleGenerateFunnyAnimal(adjective, vegetable, animal);
+      setMissingMessage("");
+    } else if (!adjective && !vegetable && !animal) {
+      setMissingMessage("");
+      setFunnyAnimal("");
+    } else {
+      const missing = [];
+      if (!adjective) missing.push("Adjektiv");
+      if (!vegetable) missing.push("Frucht");
+      if (!animal) missing.push("Tier");
+      setMissingMessage(missingWordsMessage(missing));
+      setFunnyAnimal("");
+    }
+  }, [adjective, vegetable, animal]);
+
+  useEffect(() => {
+    checkWordsCompletion();
+  }, [checkWordsCompletion]);
 
   const handleGenerateWord = async (type: string) => {
     const word = await generateWord(type);
     switch (type) {
       case "adjective":
         if (word) setAdjective(word);
-        if (animal && vegetable) handleGenerateFunnyAnimal(adjective, vegetable, word);
         break;
       case "vegetable":
         if (word) setVegetable(word);
-        if (animal && adjective) handleGenerateFunnyAnimal(adjective, vegetable, animal);
+
         break;
       case "animal":
         if (word) {
           setAnimal(word);
         }
-        if (adjective && vegetable) {
-          handleGenerateFunnyAnimal(adjective, vegetable, word);
-        } else if (!adjective) {
-          setMissingMessage(missingAdjectiveMessage);
-        } else if (!vegetable) {
-          setMissingMessage(missingVegetableMessage);
-        } else if (!adjective && !vegetable) {
-          setMissingMessage(missingWordsMessage);
-        }
-
         break;
     }
   };
@@ -93,6 +93,16 @@ export default function GameComponent() {
     }
   };
 
+  const resetGame = () => {
+    setAdjective("");
+    setVegetable("");
+    setAnimal("");
+    setFunnyAnimal("");
+    setMissingMessage("");
+    setImageUrl("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div>
       <header className={`${styles.header} ${londrinaSketch.className}`}>
@@ -104,7 +114,7 @@ export default function GameComponent() {
           <div className={styles.buttonRow}>
             <div className={styles.wordContainer}>
               {!adjective ? (
-                <button className={`${styles.button} ${styles.jarButton} ${styles.adjectiveButton}`} onClick={() => handleGenerateWord("adjective")}>
+                <button className={`${styles.button} ${styles.jarButton}`} onClick={() => handleGenerateWord("adjective")} disabled={adjective !== ""}>
                   Ziehe ein Adjektiv
                 </button>
               ) : (
@@ -113,7 +123,7 @@ export default function GameComponent() {
             </div>
             <div className={styles.wordContainer}>
               {!vegetable ? (
-                <button className={`${styles.button} ${styles.jarButton} ${styles.vegetableButton}`} onClick={() => handleGenerateWord("vegetable")}>
+                <button className={`${styles.button} ${styles.jarButton}`} onClick={() => handleGenerateWord("vegetable")} disabled={vegetable !== ""}>
                   Ziehe eine Frucht
                 </button>
               ) : (
@@ -123,7 +133,7 @@ export default function GameComponent() {
 
             <div className={styles.wordContainer}>
               {!animal ? (
-                <button className={`${styles.button} ${styles.jarButton} ${styles.animalButton}`} onClick={() => handleGenerateWord("animal")}>
+                <button className={`${styles.button} ${styles.jarButton}`} onClick={() => handleGenerateWord("animal")} disabled={animal !== ""}>
                   Ziehe ein Tier
                 </button>
               ) : (
@@ -164,6 +174,22 @@ export default function GameComponent() {
           </div>
         )}
       </div>
+      <footer className={styles.footer}>
+        <p className="text-sm text-gray-600 mt-2">Animal Images generated using OpenAIs DALL-E.</p>
+        <p>Favicon and placholder cat image generated using ChatGPT</p>
+        <p>
+          Background: <a href="https://pixabay.com/de/users/ds_30-1795490/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=5370016">Dmitriy</a> auf <a href="https://pixabay.com/de//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=5370016">Pixabay</a>
+        </p>
+        <p>
+          Paper-Background: Bild von <a href="https://pixabay.com/de/users/mrbandit22-4809957/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2828083">carlos gaviria</a> auf <a href="https://pixabay.com/de//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2828083">Pixabay</a>{" "}
+        </p>
+        <p>
+          Blot: Bild von <a href="https://pixabay.com/de/users/clker-free-vector-images-3736/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=307260">Clker-Free-Vector-Images</a> auf <a href="https://pixabay.com/de//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=307260">Pixabay</a>
+        </p>
+        <p>
+          Jar: Bild von <a href="https://pixabay.com/de/users/clker-free-vector-images-3736/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=311089">Clker-Free-Vector-Images</a> auf <a href="https://pixabay.com/de//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=311089">Pixabay</a>
+        </p>
+      </footer>
     </div>
   );
 }

@@ -27,19 +27,12 @@
 .buttonContainer {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* align-items: center; */
   gap: 1rem;
-  width: 100%;
+  /* width: 100%; */
+  justify-content: center;
   margin-top: 5rem;
   margin-bottom: 2rem;
-}
-
-.buttonRow {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 4rem;
-  width: 100%;
-  max-width: 800px; /*Adjust as needed*/
 }
 
 .button {
@@ -55,11 +48,18 @@
   font-family: inherit;
 }
 
-.button:hover {
-  background-image: url("../../public/assets/paper.png");
-  background-size: cover;
-  background-position: center;
+.jarButton {
+  height: 300px;
   border: none;
+  background-image: url("../../public/assets/jar-311089_1920.png");
+  background-size: 80%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.jarButton:hover {
+  background-image: url("../../public/assets/jar-311089_1920_pink.png");
+  cursor: pointer;
 }
 
 .button:disabled {
@@ -157,6 +157,10 @@
 }
 
 @media screen and (min-width: 768px) {
+  .buttonContainer {
+    flex-direction: row;
+  }
+
   .container {
     padding: 40px;
   }
@@ -181,9 +185,11 @@
   }
 
   .buttonRow {
-    grid-template-columns: repeat(3, 1fr);
-    /* flex-direction: row;
-    justify-content: space-between; */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 4rem;
+    width: 100%;
+    max-width: 800px;
   }
 }
 
@@ -192,15 +198,6 @@
     max-width: 1200px;
     margin: 0 auto;
   }
-}
-
-.adjectiveButton {
-}
-
-.vegetableButton {
-}
-
-.animalButton {
 }
 
 .spinnerContainer {
@@ -217,6 +214,21 @@
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
+}
+
+.footer {
+  font-size: 0.5em;
+  margin-left: 10px;
+  border-top: 1px solid black;
+}
+
+.footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
 }
 
 @keyframes spin {
